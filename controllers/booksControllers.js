@@ -9,9 +9,6 @@ exports.getAllBooks = async (req, res) => {
     if (author) filter.author = { $regex: author, $options: 'i' };
     if (category) filter.category = { $regex: category, $options: 'i' };
 
-    console.log("QUERY:", req.query);
-console.log("FILTER:", filter)
-
     const books = await Book.find(filter)
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
@@ -26,7 +23,6 @@ console.log("FILTER:", filter)
       message: 'Fetched all books successfully',
       total: totalBooks,
       currentPage: parseInt(page),
-      totalPages: Math.ceil(totalBooks / limit),
       books,
     });
   } catch (err) {
