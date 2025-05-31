@@ -52,7 +52,7 @@ exports.createAuthor = async (req, res) => {
     if (!name || !bio || !nationality || !birthyear) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-
+    
     const newAuthor = new Author({
       name,
       bio,

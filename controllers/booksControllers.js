@@ -103,3 +103,23 @@ exports.deleteBook = async(req,res) => {
         return res.status(500).json({message:'Error while deleting Book',error: err.message});
     }
 }
+
+exports.uploadBookCover = async(req,res) => {
+    try{
+        const {id} = req.params;
+        if(!req.file) {
+            return res.status(400).json({message:'No file uploaded'});
+        }
+        const book = await Book.findById(id);
+        if(!book) {
+            return res.status(404).json({message:"Can't find book with this id"});
+        }
+
+        book.coverImage = req.file.filename;
+        await book.save();
+
+        return res.status(200).json({message: "Book cover uploaded successfully",coverImage: `/uploads/${req.file.filename}`,book});
+    }catch(err){
+        return res.status(500).json({messagE: 'Error while uploading book cover',error:err.message});
+    }
+}
