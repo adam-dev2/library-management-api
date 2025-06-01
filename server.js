@@ -12,7 +12,7 @@ connectDB();
 app.use(express.json());
 
 app.use('/api/books',bookRoutes);
-app.use("/api/author",authorRoutes);
+app.use("/api/authors",authorRoutes);
 app.use('/api/users',userRoutes)
 
 app.listen(PORT,()=>{

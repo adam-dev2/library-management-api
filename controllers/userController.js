@@ -2,7 +2,7 @@ const User = require("../models/User");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Register
+
 exports.register = async (req, res) => {
   try {
     const { fullname, email, password } = req.body;
@@ -132,7 +132,7 @@ exports.getUserByID = async (req, res) => {
 
 exports.profilePictureUpload = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
