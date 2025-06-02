@@ -17,7 +17,7 @@ app.use('/api/books',bookRoutes);
 app.use("/api/authors",authorRoutes);
 app.use('/api/users',userRoutes)
 app.use('/api/loans', loanRoutes);
-app.use('/api/review', reviewRoutes); 
+app.use('/api/books', reviewRoutes); 
 
 app.listen(PORT,()=>{
     console.log(`Listening on port: ${PORT}`)
