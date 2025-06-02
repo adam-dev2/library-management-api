@@ -1,4 +1,9 @@
-const Review = require('../models/Review');
+const {
+  addReviewService,
+  getBookReviewsService,
+  editReviewService,
+  deleteReviewService,
+} = require('../services/reviewService');
 
 exports.addReview = async (req, res) => {
   try {
@@ -6,36 +11,30 @@ exports.addReview = async (req, res) => {
     const { id: bookId } = req.params;
     const userId = req.user.id;
 
-    if (!rating || rating < 1 || rating > 5) {
+    const review = await addReviewService(userId, bookId, rating, comment);
+
+    return res.status(201).json({ message: 'Review added', review });
+  } catch (err) {
+    if (err.message === 'invalid_rating') {
       return res.status(400).json({ message: 'Rating must be between 1 and 5' });
     }
-
-    const existingReview = await Review.findOne({ user: userId, book: bookId });
-    if (existingReview) {
+    if (err.message === 'already_reviewed') {
       return res.status(400).json({ message: 'You already reviewed this book' });
     }
-
-    const review = new Review({ user: userId, book: bookId, rating, comment });
-    await review.save();
-
-    res.status(201).json({ message: 'Review added', review });
-  } catch (err) {
-    res.status(500).json({ message: 'Error adding review', error: err.message });
+    return res.status(500).json({ message: 'Error adding review', error: err.message });
   }
 };
-
 
 exports.getBookReviews = async (req, res) => {
   try {
     const { id: bookId } = req.params;
-    const reviews = await Review.find({ book: bookId }).populate('user', 'fullname email');
+    const reviews = await getBookReviewsService(bookId);
 
-    res.status(200).json({ message: 'Fetched book reviews', total: reviews.length, reviews });
+    return res.status(200).json({ message: 'Fetched book reviews', total: reviews.length, reviews });
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching reviews', error: err.message });
+    return res.status(500).json({ message: 'Error fetching reviews', error: err.message });
   }
 };
-
 
 exports.editReview = async (req, res) => {
   try {
@@ -43,34 +42,29 @@ exports.editReview = async (req, res) => {
     const { rating, comment } = req.body;
     const userId = req.user.id;
 
-    const review = await Review.findOne({ _id: reviewId, book: bookId, user: userId });
-    if (!review) {
+    const review = await editReviewService(userId, bookId, reviewId, rating, comment);
+
+    return res.status(200).json({ message: 'Review updated', review });
+  } catch (err) {
+    if (err.message === 'not_found') {
       return res.status(404).json({ message: 'Review not found or unauthorized' });
     }
-
-    review.rating = rating ?? review.rating;
-    review.comment = comment ?? review.comment;
-
-    await review.save();
-    res.status(200).json({ message: 'Review updated', review });
-  } catch (err) {
-    res.status(500).json({ message: 'Error updating review', error: err.message });
+    return res.status(500).json({ message: 'Error updating review', error: err.message });
   }
 };
-
 
 exports.deleteReview = async (req, res) => {
   try {
     const { id: bookId, reviewId } = req.params;
     const userId = req.user.id;
 
-    const review = await Review.findOneAndDelete({ _id: reviewId, book: bookId, user: userId });
-    if (!review) {
+    await deleteReviewService(userId, bookId, reviewId);
+
+    return res.status(200).json({ message: 'Review deleted successfully' });
+  } catch (err) {
+    if (err.message === 'not_found') {
       return res.status(404).json({ message: 'Review not found or unauthorized' });
     }
-
-    res.status(200).json({ message: 'Review deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error deleting review', error: err.message });
+    return res.status(500).json({ message: 'Error deleting review', error: err.message });
   }
 };

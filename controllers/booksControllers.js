@@ -1,23 +1,18 @@
-const Book = require('../models/Book');
+const bookService = require('../services/bookService');
 
 exports.getAllBooks = async (req, res) => {
   try {
     const { title, author, category, page = 1, limit = 10 } = req.query;
 
-    let filter = {};
-    if (title) filter.title = { $regex: title, $options: 'i' };
-    if (author) filter.author = { $regex: author, $options: 'i' };
-    if (category) filter.category = { $regex: category, $options: 'i' };
+    const filters = {};
+    if (title) filters.title = { $regex: title, $options: 'i' };
+    if (author) filters.author = { $regex: author, $options: 'i' };
+    if (category) filters.category = { $regex: category, $options: 'i' };
 
-    const books = await Book.find(filter)
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+    const { books, totalBooks } = await bookService.getAllBooksService(filters, page, limit);
 
-    const totalBooks = await Book.countDocuments(filter);
-
-    if (books.length === 0) {
+    if (books.length === 0)
       return res.status(404).json({ message: 'No books found' });
-    }
 
     return res.status(200).json({
       message: 'Fetched all books successfully',
@@ -26,100 +21,81 @@ exports.getAllBooks = async (req, res) => {
       books,
     });
   } catch (err) {
-    return res.status(500).json({ message: 'Error while fetching all books', error: err.message });
+    return res.status(500).json({ message: 'Error fetching books', error: err.message });
   }
 };
 
+exports.getByID = async (req, res) => {
+  try {
+    const book = await bookService.getBookByIdService(req.params.id);
+    if (!book)
+      return res.status(404).json({ message: 'No books found with this ID' });
 
-exports.getByID = async(req,res) => {
+    return res.status(200).json({ message: 'Book fetched successfully', book });
+  } catch (err) {
+    return res.status(500).json({ message: 'Error fetching book by ID', error: err.message });
+  }
+};
+
+exports.createBook = async (req, res) => {
+  try {
+    const { title, author, category, publishedYear } = req.body;
+    if (!title || !author || !category || !publishedYear)
+      return res.status(400).json({ message: 'Missing fields' });
+
     try {
-        const {id} = req.params;
-        const fetchBoook = await Book.findById(id);
-        if(!fetchBoook){
-            return res.status(404).json({message: 'No books found with this ID'});
-        }
-        return res.status(200).json({message: 'successfully fetched bookd with this ID',book:fetchBoook});  
-    }catch(err){
-        return res.status(500).json({message: `Error while fetching book by id`,error: err.message})
+      const newBook = await bookService.createBookService({ title, author, category, publishedYear });
+      return res.status(201).json({ message: 'Book created successfully', book: newBook });
+    } catch (error) {
+      if (error.message === 'exists') {
+        return res.status(409).json({ message: 'Book already exists by this author' });
+      }
+      throw error;
     }
-}
+  } catch (err) {
+    return res.status(500).json({ message: 'Error creating book', error: err.message });
+  }
+};
 
-exports.createBook = async(req,res) => {
-    try{
-        const {title,author,category,publishedYear} = req.body;
-        if(!title || !author || !category || !publishedYear ) {
-            return res.status(400).json({message: `Missing fields`});
-        }
+exports.editBook = async (req, res) => {
+  try {
+    const updated = await bookService.editBookService(req.params.id, req.body);
+    if (!updated)
+      return res.status(404).json({ message: 'Book not found with this ID' });
 
-        const existingBook = await Book.findOne({ title, author });
+    return res.status(200).json({ message: 'Book updated successfully', book: updated });
+  } catch (err) {
+    return res.status(500).json({ message: 'Error updating book', error: err.message });
+  }
+};
 
-        if (existingBook) {
-        return res.status(409).json({
-            message: 'Book already exists by this author'
-        });
-        }
+exports.deleteBook = async (req, res) => {
+  try {
+    const deleted = await bookService.deleteBookService(req.params.id);
+    if (!deleted)
+      return res.status(404).json({ message: 'Book not found with this ID' });
 
-        const newBook = new Book({title,author,category,publishedYear});
-        await newBook.save();
+    return res.status(200).json({ message: 'Book deleted successfully', book: deleted });
+  } catch (err) {
+    return res.status(500).json({ message: 'Error deleting book', error: err.message });
+  }
+};
 
-        return res.status(201).json({message:'New book created successfully',book: newBook});
-    }catch(err){
-        return res.status(500).json({message: "Error while creating book",error: err.message})
-    }
-}
+exports.uploadBookCover = async (req, res) => {
+  try {
+    if (!req.file)
+      return res.status(400).json({ message: 'No file uploaded' });
 
-exports.editBook = async(req,res) => {
-    try{
-        const {id} = req.params;
-        const {title,author,category,publishedYear} = req.body;
-        const updateBook = await Book.findByIdAndUpdate(
-            id,
-            {title,author,category,publishedYear},
-            {new:true,runValidators: true}
-        ) 
-        if(!updateBook) {
-            return res.status(404).json({message:'Book not found with this ID'});
-        }
+    const updatedBook = await bookService.uploadBookCoverService(req.params.id, req.file.filename);
+    if (!updatedBook)
+      return res.status(404).json({ message: 'Book not found with this ID' });
 
-        return res.status(200).json({message:'Edited Book successfully',book:updateBook});
-    }catch(err){
-        return res.status(500).json({message: 'Error whie editing book',error: err.message})
-    }
-}
-
-exports.deleteBook = async(req,res) => {
-    try{
-        const {id} = req.params;
-        const deletebook = await Book.findByIdAndDelete(id);
-        if (!deletebook) {
-            return res.status(404).json({ message: 'No book found with this ID' });
-        }
-
-        return res.status(200).json({
-        message: 'Book deleted successfully',
-        book: deletebook
-        });
-    }catch(err){
-        return res.status(500).json({message:'Error while deleting Book',error: err.message});
-    }
-}
-
-exports.uploadBookCover = async(req,res) => {
-    try{
-        const {id} = req.params;
-        if(!req.file) {
-            return res.status(400).json({message:'No file uploaded'});
-        }
-        const book = await Book.findById(id);
-        if(!book) {
-            return res.status(404).json({message:"Can't find book with this id"});
-        }
-
-        book.coverImage = req.file.filename;
-        await book.save();
-
-        return res.status(200).json({message: "Book cover uploaded successfully",coverImage: `/uploads/${req.file.filename}`,book});
-    }catch(err){
-        return res.status(500).json({messagE: 'Error while uploading book cover',error:err.message});
-    }
-}
+    return res.status(200).json({
+      message: 'Cover uploaded successfully',
+      coverImage: `/uploads/${req.file.filename}`,
+      book: updatedBook
+    });
+  } catch (err) {
+    return res.status(500).json({ message: 'Error uploading cover', error: err.message });
+  }
+};
