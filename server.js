@@ -12,7 +12,9 @@ const reviewRoutes = require('./routes/reviewRoutes');
 connectDB();
 
 app.use(express.json());
-
+app.get('/',(req,res) => {
+    res.status(200).json({message:"This is the API for the Library management system. For furhter endpoints you can visit github repo, repo link: (https://github.com/adam-dev2/library-management-api)"})
+})
 app.use('/api/books',bookRoutes);
 app.use("/api/authors",authorRoutes);
 app.use('/api/users',userRoutes)
