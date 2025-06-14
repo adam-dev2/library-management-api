@@ -57,13 +57,11 @@ A fully featured RESTful API for managing a library's core operations including 
 ````
 
 2. Install dependencies:
-
    ```bash
    npm install
    ```
 3. Create a `.env` file using `.env.example` as a reference.
 4. Start the server:
-
    ```bash
    npm run dev
    ```
