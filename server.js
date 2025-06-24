@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors')
 const app = express();
 require('dotenv').config();
 const connectDB = require('./config/db')
@@ -12,6 +13,11 @@ const reviewRoutes = require('./routes/reviewRoutes');
 connectDB();
 
 app.use(express.json());
+
+app.use(cors({
+    origin: "*"
+}))
+
 app.get('/',(req,res) => {
     res.status(200).json({message:"This is the API for the Library management system. For furhter endpoints you can visit github repo, repo link: (https://github.com/adam-dev2/library-management-api)"})
 })
