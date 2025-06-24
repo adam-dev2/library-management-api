@@ -1,88 +1,58 @@
-# 📚 Library Management System API
+📘 API Modules Documentation
+Each module in the Library Management System API performs CRUD operations related to a core entity in the system. Below is the breakdown of all modules and their available endpoints.
 
-A fully featured RESTful API for managing a library's core operations including books, users, and loan records. Built using Node.js, Express.js, and MongoDB, following a scalable service-controller architecture.
+📚 Book Module
+Handles all operations related to books.
 
-## 🚀 Features
+Method	Endpoint	Description
+GET	/api/books	Fetch all books
+GET	/api/books/:id	Fetch a book by ID
+POST	/api/books	Create a new book
+PUT	/api/books/:id	Update a book by ID
+DELETE	/api/books/:id	Delete a book by ID
 
-- 📘 Book Management (Add, Update, Delete, List)
-- 👤 User Management (Register, Login, Role-based Access Control)
-- 🔁 Loan Management (Issue, Return, Track)
-- ✅ JWT Authentication & Authorization (Admin / User)
-- 🧪 Postman Tested Endpoints
-- 📦 Modular codebase with clean service-controller separation
-- 📊 MongoDB Aggregations for loan history and book availability
+✍️ Author Module
+Manages author details.
 
-## 📂 Folder Structure
+Method	Endpoint	Description
+GET	/api/author	Fetch all authors
+GET	/api/author/:id	Fetch a specific author by ID
+POST	/api/author	Create a new author
+PUT	/api/author/:id	Update author by ID
+DELETE	/api/author/:id	Delete author by ID
 
-```
+👤 User Module
+Handles user account operations.
 
-.
-├── controllers
-├── models
-├── routes
-├── services
-├── middlewares
-├── utils
-├── config
-├── .env.example
-└── server.js
+Method	Endpoint	Description
+POST	/api/users/register	Register a new user
+POST	/api/users/login	Log in a user
+GET	/api/users/	Fetch all users
+GET	/api/users/:id	Get user details by ID
+POST	/api/users/:id/upload-profile-picture	Upload user profile picture
 
-````
+📦 Loan Module
+Manages book borrowing and returning.
 
-## Authentication
+Method	Endpoint	Description
+GET	/api/loans	Retrieve all loan records
+POST	/api/loans	Create a new loan
+GET	/api/loans/:id	Retrieve loan by user/book ID
+PUT	/api/loans/:id	Mark a loan as returned
 
-- **Login/Register** endpoints return a JWT token.
-- **Protected Routes** require a valid token.
-- **Role-based access** differentiates Admin and User capabilities.
+📝 Review Module
+Manages book reviews.
 
-## API Testing
+Method	Endpoint	Description
+GET	/api/books/:id/reviews	Fetch all reviews for a book
+POST	/api/books/:id/reviews	Add a new review to a book
+PUT	/api/books/:id/reviews/:reviewId	Edit a review
+DELETE	/api/books/:id/reviews/:reviewId	Delete a review
 
-- Fully tested using Postman
-- Supports CRUD operations for all major entities
-- Includes sample payloads for quick testing
+🖼️ Multer (Book Cover Upload)
+Handles file upload using Multer (book cover image).
 
-## Tech Stack
+Method	Endpoint	Description
+POST	/api/book/:id/upload-cover	Upload a book cover by Book ID
 
-- **Backend:** Node.js, Express.js
-- **Database:** MongoDB + Mongoose
-- **Auth:** JWT (JSON Web Token)
-- **Validation:** Express Validator
-- **Dev Tools:** Nodemon, dotenv, Postman
-
-## Setup Instructions
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/library-management-api.git
-````
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file using `.env.example` as a reference.
-4. Start the server:
-   ```bash
-   npm run dev
-   ```
-
-## Example Endpoints
-
-* `POST /api/auth/register` - User Registration
-* `POST /api/auth/login` - User Login
-* `GET /api/books` - List All Books
-* `POST /api/books` - Add Book (Admin only)
-* `POST /api/loans/issue` - Issue a Book
-* `POST /api/loans/return` - Return a Book
-
-## Notes
-
-* Supports 25+ API endpoints with clean error handling
-* Easily extendable for search, pagination, or analytics
-* Built for scalability and production-readiness
-
----
-
-**Feel free to fork, extend, or integrate into your own systems.**
-PRs and suggestions are welcome!
-
+ℹ️ Each endpoint includes standard response formats (200 OK, 404 Not Found, 500 SERVER ERROR, etc.). For full request/response bodies and example payloads, refer to the Postman collection (to be added)
